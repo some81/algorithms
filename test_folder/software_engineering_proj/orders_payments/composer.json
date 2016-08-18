@@ -1,0 +1,8 @@
+{
+	"autoload": {
+		"classmap": [
+			"lib/Contracts",
+			"lib/Entity"
+		]
+	}
+}

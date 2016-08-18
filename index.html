@@ -1,0 +1,274 @@
+<!DOCTYPE HTML>
+<html>
+    <title>Easel Test</title>
+    <head>
+    
+    <script src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-rc1/jquery.js"></script>
+    
+    <script>
+      
+        var stage,queue,canvas;
+        
+        function init() {
+            canvas = document.querySelector("canvas")
+            queue = new createjs.LoadQueue(true,null,true);
+            queue.on("fileload", handleComplete);
+            queue.on("error", handleError);
+            queue.loadFile({id:"myImg", src:"http://ihcdn3.ioimg.org/iov6live/images/global_map/view_1/background.jpg"});
+            queue.load();
+            //console.log(event)
+            //var image = new Image();
+            //image.src = "background.jpg";
+            //image.onload = handleImageLoad;
+        }
+        
+        function handleComplete(event){
+          //console.log(queue.getResult("myImg"))
+          //var image = event.item;
+          canvas = $('#myCanvas')
+          stage = new createjs.Stage('myCanvas');
+          createjs.Ticker.setFPS(60);
+          createjs.Ticker.addEventListener("tick", tick);
+          
+          var image = queue.getResult("myImg");
+          var bitmap = new createjs.Bitmap(image);
+          bitmap.cache(0,0,image.width,image.height)
+          stage.addChild(bitmap);
+          
+          bitmap.addEventListener("pressmove", function(evt) {
+            var o = evt.target;
+            o.x = evt.stageX + o.offset.x;
+            o.y = evt.stageY + o.offset.y;
+          });
+          bitmap.addEventListener("rollout", function (evt) {
+            var o = evt.target;
+            o.scaleX = o.scaleY = o.scale;
+            update = true;
+          });
+          bitmap.addEventListener("mousedown", function (evt) {
+            // bump the target in front of its siblings:
+            var o = evt.target;
+            //o.parent.addChild(o);
+            o.offset = {x: o.x - evt.stageX, y: o.y - evt.stageY};
+            update()
+            
+            
+            
+            
+            //canvas.addEventListener("mousedown", function(t) {
+            //        e.disabled || (picassio.map.factory.destroyMenu(), e.pointer.drag = !0, e.pointer.last.x = t.pageX, e.pointer.last.y = t.pageY, e.pointer.down.x = t.pageX, e.pointer.down.y = t.pageY, e.pointer.lastTime = new Date, $(document).on("mousemove.gm-minimap", function(t) {
+            //            if (e.pointer.drag) {
+            //                t.stopPropagation();
+            //                var a = e.pointer.last.x - t.pageX,
+            //                    i = e.pointer.last.y - t.pageY;
+            //                e.pointer.last.x = t.pageX, e.pointer.last.y = t.pageY, e.stage.regX += a, e.stage.regY += i;
+            //                var n = new Date;
+            //                n.getTime() - e.pointer.lastTime.getTime() >= 16 && (e.update(), e.pointer.lastTime = n)
+            //            }
+            //        }), $(document).one("mouseup", function(t) {
+            //            e.pointer.drag = !1;
+            //            var a = e.pointer.down.x - t.pageX,
+            //                i = e.pointer.down.y - t.pageY,
+            //                n = Math.sqrt(a * a + i * i);
+            //            10 > n || ($(document).off("mousemove.gm-minimap"), (e.zoom.scale >= e.scaleRange.reload.min || e.requestFullMap) && e.load(e.serialize()))
+            //        }))
+            //    })
+            
+            function update() {
+                var e = rs2xy(0, 1e3);
+                e = stage.localToGlobal(e.x, e.y);
+                var t = 2e3 * 0.001,
+                    a = 2e3 * 0.001,
+                    n = {
+                        x: 960,
+                        y: 580
+                    },
+                    s = Math.max(e.x, 0),
+                    o = Math.max(e.y, 0),
+                    r = Math.min(n.x, 960),
+                    c = Math.min(n.y, 580);
+                    
+                t = Math.min(t, canvas.w), stage.clear(), stage.drawRect = new createjs.Rectangle(s, o, r - s, c - o), stage.update()
+            }
+            
+            
+            
+          });
+          bitmap.addEventListener("rollover", function (evt) {
+            var o = evt.target;
+            o.scaleX = o.scaleY = o.scale * 1.2;
+            update = true;
+          });
+          //console.log(bitmap)
+          
+          var a = xy2rs(1200 >> 1, 580 >> 1),
+              i = calcSurroundingBlocks(a.r, a.s);
+            console.log(i)
+            displayBlocks(i)
+          
+        }
+        
+        
+        //addEventListener("mousedown", function(t) {
+        
+        function tick(event){
+          stage.update()
+        }
+        
+        function handleError(){
+          console.log("error")
+        }
+
+        
+        function tick(event){
+          stage.update()
+        }
+        
+        function handleError(){
+          console.log("error")
+        }
+        
+        function calcSurroundingBlocks(e, t, a, i){
+          a = a ? a : 1;
+          var n, s, o = rs2xy(e, t);
+          i ? (n = i.width * a, s = i.height * a) : (n = 960 * a, s = 580 * a);
+          for (var r, c, l = o.x - n, d = o.y - s, h = o.x + n, m = o.y + s, p = [], u = l; h >= u; u += 200)
+              for (var f = d; m >= f; f += 100) r = xy2rs(u, f), c = rs2blockId(r.r, r.s), -1 === p.indexOf(c) && p.push(c);
+          return p
+        }
+        
+        
+        function rs2xy(e, t) {
+                var a = parseInt(e) - 100,
+                    n = parseInt(t) - 100,
+                    s = Math.round(a * 1),
+                    o = -Math.round(n * 1);
+                return {
+                    x: s,
+                    y: o
+                }
+            }
+        
+        function rs2blockId (e, t) {
+                e -= 1e2 - (2e3 >> 1), t = t - (0 - (2e3 >> 1)) + 1;
+                var a = Math.ceil(2e3 / 20),
+                    i = Math.ceil(t / 20);
+                i = Math.max(0, i - 1);
+                var n = e / 20 + i * a;
+                return parseInt(n)
+            }
+        
+        
+            function uv2rs(e, t) {
+                var a = e / 96 - 2e3 / 4,
+                    i = t / 48 - 2e3 / 4,
+                    n = Math.floor(a + i),
+                    s = Math.floor(a - i);
+                return {
+                    r: n,
+                    s: s
+                }
+            }
+            function xy2uv(e, t) {
+              return {
+                  u: e + 980 / 2,
+                  v: t + 580 / 2
+              }
+            }
+            function xy2rs (e, t) { 
+              var a = xy2uv(e, t);
+              return uv2rs(a.u, a.v)
+            }
+        
+        
+        
+        //function handleImageLoad(event) {
+        //    var image = event.target;
+        //    var bitmap = new createjs.Bitmap(image);
+        //    stage.addChild(bitmap);
+        //    stage.update();
+        //}
+        
+        var t = {
+          cache : {
+            blocks: {}
+        },
+        spawning: {
+                waitingObjects: 0,
+                waitingObjectsDict: {}
+            }
+        }
+        
+        var e = {
+          cache : {
+            blocks: {}
+        }}
+        
+        
+        function calcMissingBlocks(t) {
+          for (var a = [], i = 0; i < t.length; i++) "undefined" == typeof e.cache.blocks[t[i]] && a.push(t[i]);
+          return a
+          }
+          
+          function displayBlocks(e) {
+            var a = calcMissingBlocks(e);
+            console.log(a)
+            a.length > 0 ? ($(document).trigger("picassio-gm-spawning-start"), loadObjectsJson(a, function(a) {
+                for (var i, n = 0, s = 0; s < a.length; s++) i = parseInt(a[s].id), "undefined" == typeof t.cache.blocks[i] && (t.cache.blocks[i] = a[s], n += a[s].data.length);
+                t.spawning.waitingObjects += n, spawnBlocks(e)
+            })) : spawnBlocks(e)
+          }
+            
+          //function loadObjectsJson(e, t) {
+          //  console.log(t)
+          //  $.get("globalMapJson.php?blocks=1&b[]=" + e.join("&b[]=")).always(function(e) {
+          //      for (var a = 6, i = {
+          //              D: a++,
+          //              I: a++,
+          //              Y: a++,
+          //              A: a++,
+          //              N: a++
+          //          }, n = 0, s = 0, o = "", r = e.responseText.length; r - 1 > n;) s = i[e.responseText.substr(n, 1)], o += e.responseText.substr(n + 1, s), n += s + 1;
+          //      data = JSON.parse(atob(o)), "function" == typeof t && t(data.blocks)
+          //  })
+          //}
+          
+          function loadObjectsJson(e, t) {
+            var a = xy2rs(960 >> 1, 580 >> 1);
+              $.get("globalMapJson.php?r=" + a.r + "&s=" + a.s + "&blocks=1&b[]=" + e.join("&b[]=")).always(function(e) {
+                  for (var a = 6, i = {
+                          D: a++,
+                          I: a++,
+                          Y: a++,
+                          A: a++,
+                          N: a++
+                      }, n = 0, s = 0, o = "", r = e.length; r - 1 > n;) s = i[e.substr(n, 1)], o += e.substr(n + 1, s), n += s + 1;
+                  data = JSON.parse(atob(o)), "function" == typeof t && t(data.blocks)
+              })
+            }
+            
+            function spawnBlocks(e) {
+                e.sort(function(e, t) {
+                    return parseInt(e) > parseInt(t) ? 1 : parseInt(e) < parseInt(t) ? -1 : 0
+                });
+                for (var a, i = e.length >> 1, n = 1, s = 0; s < e.length; s++) i += s * n, a = t.cache.blocks[parseInt(e[i])], spawnBlock(a), n *= -1
+                console.log(t.cache)
+            }
+          
+          function spawnBlock(e) {
+                if ("undefined" != typeof e)
+                    for (var a = 0; a < e.data.length; a++) spawnObject(e.data[a], e.id)
+            }
+            
+            
+
+
+    </script>
+
+    </head>
+    <body onload="init();">
+        <canvas id="myCanvas" width="960" height="580"></canvas>
+    </body>
+
+</html>
