@@ -1,4 +1,4 @@
-#PHP Algorithums
+#PHP Algorithms
 
 * mearge sort
 * quick sort
